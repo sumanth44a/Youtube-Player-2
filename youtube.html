@@ -1,0 +1,660 @@
+
+<!-- youtube.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Embed Player (Single File)</title>
+  <style>
+    :root{
+      --bg: #0b1220;
+      --panel: #111a2e;
+      --panel2: #0f172a;
+      --text: #e5e7eb;
+      --muted: #a7b0c0;
+      --brand: #4f46e5;
+      --brand2: #22c55e;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 18px 45px rgba(0,0,0,.45);
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    * { box-sizing: border-box; }
+    body{
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(79,70,229,.25), transparent 55%),
+        radial-gradient(1000px 700px at 90% 20%, rgba(34,197,94,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg), #050814 70%);
+      min-height: 100vh;
+      padding: 28px 16px;
+    }
+
+    .container{
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    header{
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .title-wrap{
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    h1{
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: .2px;
+    }
+
+    .subtitle{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .badge{
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .controls{
+      padding: 16px;
+      background: rgba(17,26,46,.75);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 780px){
+      .grid{
+        grid-template-columns: 1.6fr .9fr;
+        align-items: start;
+      }
+    }
+
+    .field{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label{
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .2px;
+    }
+
+    .row{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    @media (min-width: 560px){
+      .row{
+        grid-template-columns: 1fr 180px;
+      }
+    }
+
+    input[type="text"], input[type="number"]{
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,.75);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s ease, transform .05s ease;
+    }
+
+    input[type="text"]::placeholder{
+      color: rgba(167,176,192,.70);
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus{
+      border-color: rgba(79,70,229,.65);
+    }
+
+    .btns{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: .2px;
+      transition: transform .05s ease, background .2s ease, border-color .2s ease;
+      user-select: none;
+    }
+    button:hover{ background: rgba(255,255,255,.09); }
+    button:active{ transform: translateY(1px); }
+
+    .primary{
+      background: linear-gradient(135deg, rgba(79,70,229,.95), rgba(79,70,229,.65));
+      border-color: rgba(79,70,229,.75);
+    }
+    .primary:hover{
+      background: linear-gradient(135deg, rgba(79,70,229,1), rgba(79,70,229,.75));
+    }
+
+    .danger{
+      background: rgba(239,68,68,.12);
+      border-color: rgba(239,68,68,.35);
+      color: #fecaca;
+    }
+
+    .toggles{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-top: 4px;
+    }
+    @media (min-width: 780px){
+      .toggles{ padding-top: 20px; }
+    }
+
+    .toggle{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,.55);
+    }
+
+    .toggle-left{
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .toggle-title{
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .toggle-desc{
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .switch{
+      position: relative;
+      width: 44px;
+      height: 26px;
+      flex: 0 0 auto;
+    }
+    .switch input{ display:none; }
+    .slider{
+      position:absolute; inset:0;
+      background: rgba(255,255,255,.12);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      transition: .2s ease;
+    }
+    .slider:before{
+      content:"";
+      position:absolute;
+      height: 20px; width: 20px;
+      left: 3px; top: 2px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.85);
+      transition: .2s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }
+    .switch input:checked + .slider{
+      background: rgba(34,197,94,.20);
+      border-color: rgba(34,197,94,.35);
+    }
+    .switch input:checked + .slider:before{
+      transform: translateX(18px);
+      background: rgba(34,197,94,.95);
+    }
+
+    .status{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,.55);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .status strong{ color: var(--text); }
+    .status.error{
+      border-color: rgba(239,68,68,.40);
+      background: rgba(239,68,68,.10);
+      color: #fecaca;
+    }
+
+    .player-wrap{
+      padding: 16px;
+      background: rgba(15,23,42,.35);
+    }
+
+    .aspect{
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.35);
+    }
+
+    iframe{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .footer{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .code{
+      font-family: var(--mono);
+      color: #c7d2fe;
+    }
+
+    a{ color: #a5b4fc; text-decoration: none; }
+    a:hover{ text-decoration: underline; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="title-wrap">
+        <h1>YouTube Player (Embed in Your Website)</h1>
+        <p class="subtitle">
+          Paste a YouTube link → this page converts it to an <span class="code">/embed/VIDEO_ID</span> URL and plays it in an iframe.
+        </p>
+      </div>
+      <div class="badge">Single file • HTML + CSS + JS</div>
+    </header>
+
+    <div class="panel">
+      <div class="controls">
+        <div class="grid">
+          <!-- Left: URL + start -->
+          <div class="field">
+            <label for="ytUrl">YouTube Link</label>
+            <div class="row">
+              <input id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ  (or youtu.be/... , shorts/..., embed/...)" />
+              <input id="startAt" type="number" min="0" step="1" placeholder="Start (sec)" title="Optional: start time in seconds" />
+            </div>
+
+            <div class="btns">
+              <button class="primary" id="playBtn">Play</button>
+              <button id="copyBtn">Copy Embed URL</button>
+              <button class="danger" id="clearBtn">Clear</button>
+            </div>
+
+            <div class="status" id="statusBox">
+              <strong>Status:</strong> Paste a YouTube link and click <strong>Play</strong>.
+            </div>
+          </div>
+
+          <!-- Right: Toggles -->
+          <div class="toggles">
+            <div class="toggle">
+              <div class="toggle-left">
+                <p class="toggle-title">Autoplay</p>
+                <p class="toggle-desc">Loads the video and tries to start automatically.</p>
+              </div>
+              <label class="switch" title="Autoplay">
+                <input type="checkbox" id="autoplayToggle" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle">
+              <div class="toggle-left">
+                <p class="toggle-title">Mute (recommended with autoplay)</p>
+                <p class="toggle-desc">Starts muted (some browsers block autoplay with sound).</p>
+              </div>
+              <label class="switch" title="Mute">
+                <input type="checkbox" id="muteToggle" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle">
+              <div class="toggle-left">
+                <p class="toggle-title">Privacy-enhanced mode</p>
+                <p class="toggle-desc">Use <span class="code">youtube-nocookie.com</span> for the embed host.</p>
+              </div>
+              <label class="switch" title="Privacy-enhanced mode">
+                <input type="checkbox" id="nocookieToggle" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle">
+              <div class="toggle-left">
+                <p class="toggle-title">Show controls</p>
+                <p class="toggle-desc">Show/hide the player controls.</p>
+              </div>
+              <label class="switch" title="Controls">
+                <input type="checkbox" id="controlsToggle" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-wrap">
+        <div class="aspect">
+          <iframe id="player"
+            src=""
+            title="YouTube embedded player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="footer">
+          <div>
+            <strong>Tip:</strong> If a video does not play, the uploader may have disabled embedding or your network may restrict YouTube domains.
+          </div>
+          <div style="margin-top:6px;">
+            Embed URL format and player parameters are based on the official YouTube embedded player documentation. [1](https://developers.google.com/youtube/player_parameters)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Helpers: Status UI ---
+    const statusBox = document.getElementById('statusBox');
+    function setStatus(msg, type = 'info') {
+      statusBox.classList.toggle('error', type === 'error');
+      statusBox.innerHTML = (type === 'error')
+        ? `<strong>Error:</strong> ${escapeHtml(msg)}`
+        : `<strong>Status:</strong> ${escapeHtml(msg)}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      }[s]));
+    }
+
+    // --- Parse YouTube links and extract video ID ---
+    // Supports:
+    //  - https://www.youtube.com/watch?v=VIDEO_ID
+    //  - https://youtu.be/VIDEO_ID
+    //  - https://www.youtube.com/shorts/VIDEO_ID
+    //  - https://www.youtube.com/embed/VIDEO_ID
+    // Also reads start time from URL: ?t=90 or ?t=1m30s (best-effort)
+    function extractVideoInfo(raw) {
+      if (!raw) return { id: null, start: null };
+
+      // If user pasted only an ID, accept it (11 chars typical), best-effort:
+      const justId = raw.trim();
+      if (/^[a-zA-Z0-9_-]{11}$/.test(justId)) {
+        return { id: justId, start: null };
+      }
+
+      let url;
+      try {
+        // Add scheme if missing
+        const maybe = raw.trim();
+        url = new URL(maybe.startsWith('http') ? maybe : 'https://' + maybe);
+      } catch {
+        return { id: null, start: null };
+      }
+
+      const host = url.hostname.replace(/^www\./, '');
+      const allowedHosts = new Set(['youtube.com', 'm.youtube.com', 'youtu.be', 'music.youtube.com']);
+      if (!allowedHosts.has(host)) {
+        return { id: null, start: null };
+      }
+
+      let id = null;
+
+      if (host === 'youtu.be') {
+        // youtu.be/<id>
+        id = url.pathname.split('/').filter(Boolean)[0] || null;
+      } else {
+        const path = url.pathname;
+
+        if (path === '/watch') {
+          id = url.searchParams.get('v');
+        } else if (path.startsWith('/embed/')) {
+          id = path.split('/embed/')[1]?.split('/')[0] || null;
+        } else if (path.startsWith('/shorts/')) {
+          id = path.split('/shorts/')[1]?.split('/')[0] || null;
+        } else if (path.startsWith('/live/')) {
+          // youtube.com/live/<id>
+          id = path.split('/live/')[1]?.split('/')[0] || null;
+        }
+      }
+
+      // Parse start time from URL if present
+      let start = null;
+
+      // Common: ?t=90 or ?start=90
+      const t = url.searchParams.get('t') || url.searchParams.get('start');
+      if (t) start = parseTimeToSeconds(t);
+
+      // Validate id
+      if (id && !/^[a-zA-Z0-9_-]{6,}$/.test(id)) id = null;
+
+      return { id, start };
+    }
+
+    function parseTimeToSeconds(t) {
+      // Accept:
+      //  - "90"
+      //  - "1m30s"
+      //  - "2h3m4s"
+      //  - "1:30" (mm:ss)
+      //  - "01:02:03" (hh:mm:ss)
+      const s = String(t).trim().toLowerCase();
+
+      if (/^\d+$/.test(s)) return parseInt(s, 10);
+
+      // hh:mm:ss or mm:ss
+      if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) {
+        const parts = s.split(':').map(n => parseInt(n, 10));
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      }
+
+      // 2h3m4s style
+      const m = s.match(/(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/);
+      if (m) {
+        const h = parseInt(m[1] || '0', 10);
+        const min = parseInt(m[2] || '0', 10);
+        const sec = parseInt(m[3] || '0', 10);
+        const total = h * 3600 + min * 60 + sec;
+        return total > 0 ? total : null;
+      }
+      return null;
+    }
+
+    // --- Build embed URL (official embed format + parameters) ---
+    // Official embed URL format: https://www.youtube.com/embed/VIDEO_ID
+    // Player parameters can be appended: ?autoplay=1&controls=1&start=30 ...
+    // (See YouTube Embedded Players and Player Parameters documentation.)  // cited in page footer
+    function buildEmbedUrl(videoId, opts) {
+      const host = opts.nocookie ? 'https://www.youtube-nocookie.com' : 'https://www.youtube.com';
+      const base = `${host}/embed/${encodeURIComponent(videoId)}`;
+
+      const params = new URLSearchParams();
+
+      // Common parameters (safe defaults)
+      params.set('rel', '0');               // reduce related videos from other channels (behavior may vary)
+      params.set('modestbranding', '1');    // minimal branding (may vary)
+      params.set('playsinline', '1');       // inline playback on mobile if supported
+
+      // User-selected options
+      params.set('autoplay', opts.autoplay ? '1' : '0');
+      params.set('mute', opts.mute ? '1' : '0');
+      params.set('controls', opts.controls ? '1' : '0');
+
+      // Start time if provided
+      if (Number.isFinite(opts.start) && opts.start > 0) {
+        params.set('start', String(Math.floor(opts.start)));
+      }
+
+      return `${base}?${params.toString()}`;
+    }
+
+    // --- Wire up UI ---
+    const ytUrl = document.getElementById('ytUrl');
+    const startAt = document.getElementById('startAt');
+    const autoplayToggle = document.getElementById('autoplayToggle');
+    const muteToggle = document.getElementById('muteToggle');
+    const nocookieToggle = document.getElementById('nocookieToggle');
+    const controlsToggle = document.getElementById('controlsToggle');
+
+    const playBtn = document.getElementById('playBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    const iframe = document.getElementById('player');
+
+    function getOptions() {
+      const startInput = startAt.value.trim();
+      const startVal = startInput === '' ? null : Number(startInput);
+
+      return {
+        autoplay: autoplayToggle.checked,
+        mute: muteToggle.checked,
+        nocookie: nocookieToggle.checked,
+        controls: controlsToggle.checked,
+        start: Number.isFinite(startVal) ? startVal : null
+      };
+    }
+
+    function playFromInput() {
+      const raw = ytUrl.value.trim();
+      const info = extractVideoInfo(raw);
+
+      if (!info.id) {
+        setStatus("Please paste a valid YouTube link (watch?v=..., youtu.be/..., shorts/..., embed/...) or a video ID.", "error");
+        return;
+      }
+
+      const opts = getOptions();
+
+      // If user didn't type start seconds but URL has a timestamp, use it.
+      if ((opts.start === null || opts.start === 0) && info.start) {
+        opts.start = info.start;
+        startAt.value = String(info.start);
+      }
+
+      // If autoplay is on and mute is off, keep it as user chose.
+      // (Some browsers may block autoplay with sound; user can toggle mute.)
+      const embedUrl = buildEmbedUrl(info.id, opts);
+
+      iframe.src = embedUrl;
+      setStatus(`Loaded video ID: ${info.id}${opts.start ? ` (start at ${opts.start}s)` : ''}.`);
+    }
+
+    function copyEmbedUrl() {
+      const raw = ytUrl.value.trim();
+      const info = extractVideoInfo(raw);
+
+      if (!info.id) {
+        setStatus("Nothing to copy yet. Paste a valid YouTube link first.", "error");
+        return;
+      }
+
+      const opts = getOptions();
+      if ((opts.start === null || opts.start === 0) && info.start) {
+        opts.start = info.start;
+      }
+
+      const embedUrl = buildEmbedUrl(info.id, opts);
+      navigator.clipboard.writeText(embedUrl).then(() => {
+        setStatus("Embed URL copied to clipboard.");
+      }).catch(() => {
+        // Fallback: prompt
+        window.prompt("Copy this embed URL:", embedUrl);
+        setStatus("Your browser blocked clipboard access. I opened a prompt so you can copy.");
+      });
+    }
+
+    function clearAll() {
+      ytUrl.value = '';
+      startAt.value = '';
+      iframe.src = '';
+      setStatus("Cleared. Paste a link and click Play.");
+    }
+
+    playBtn.addEventListener('click', playFromInput);
+    copyBtn.addEventListener('click', copyEmbedUrl);
+    clearBtn.addEventListener('click', clearAll);
+
+    // Press Enter in URL box to play
+    ytUrl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') playFromInput();
+    });
+
+    // Quick hint if user toggles autoplay on
+    autoplayToggle.addEventListener('change', () => {
+      if (autoplayToggle.checked) {
+        setStatus("Autoplay enabled. If it doesn't start, try enabling Mute.");
+      } else {
+        setStatus("Autoplay disabled.");
+      }
+    });
+  </script>
+</body>
+</html>
